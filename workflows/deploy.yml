@@ -3,8 +3,8 @@ name: Build & Deploy to AWS EC2
 on:
   push:
     branches:
-      - main          # se lanza al hacer push a main
-  workflow_dispatch:  # también permite lanzarlo manualmente desde GitHub UI
+      - main
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
