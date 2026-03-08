@@ -30,16 +30,20 @@ jobs:
           docker push $ECR_REGISTRY/$IMAGE_NAME:latest
 
       - name: Deploy en EC2 vía SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
-              | docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
-            docker pull ${{ secrets.ECR_REGISTRY }}/mi-app:latest
-            docker stop mi-app || true
-            docker rm mi-app || true
-            docker run -d --name mi-app -p 80:3000 \
-              ${{ secrets.ECR_REGISTRY }}/mi-app:latest
+              uses: appleboy/ssh-action@v1
+              with:
+                host: ${{ secrets.EC2_HOST }}
+                username: ${{ secrets.EC2_USER }}
+                key: ${{ secrets.EC2_SSH_KEY }}
+                envs: ECR_REGISTRY,AWS_REGION
+                script: |
+                  aws ecr get-login-password --region $AWS_REGION \
+                    | docker login --username AWS --password-stdin $ECR_REGISTRY
+                  docker pull $ECR_REGISTRY/repodevopsmulticloud:latest
+                  docker stop repodevopsmulticloud || true
+                  docker rm repodevopsmulticloud || true
+                  docker run -d --name repodevopsmulticloud -p 80:80 \
+                    $ECR_REGISTRY/repodevopsmulticloud:latest
+              env:
+                ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+                AWS_REGION: ${{ secrets.AWS_REGION }}
